@@ -7,5 +7,12 @@
   "image": "ipfs://bafkreignuu6ao6e2wemzf2gcqerljfqga6hqbceyh2rwdwth4jkwew7kfu",
   "mediaType": "image/png",
   "projectUrl": "https://preprod.northstardex.com",
-  "notes": ""
+  "notes": "",
+  "status": {
+    "state": "listed",
+    "contractAddress": "eaab93c9bb71ec1423d10775ef0556580020560dfdf4f4536a8560b2fefd625e",
+    "txId": "0085853fa10bc0c91eab7669fc6a5b84bc9c1f250b509002cf786eae52d87add91",
+    "updatedAt": "2026-06-10T15:10:47.955Z",
+    "entryCount": 2
+  }
 }
