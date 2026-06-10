@@ -1,0 +1,11 @@
+{
+  "tokenColor": "0000000000000000000000000000000000000000000000000000000000000000",
+  "name": "NIGHT",
+  "symbol": "NIGHT",
+  "decimals": 6,
+  "description": "Midnight NIGHT token",
+  "image": "https://cdn.sanity.io/images/330xhmya/production/ec4a39d178b9deb962e9522acd5d52e431af491a-790x790.svg",
+  "mediaType": "image/svg+xml",
+  "projectUrl": "https://midnight.network",
+  "notes": "NIGHT token listing request"
+}
