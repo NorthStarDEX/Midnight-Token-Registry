@@ -7,5 +7,12 @@
   "image": "https://cdn.sanity.io/images/330xhmya/production/ec4a39d178b9deb962e9522acd5d52e431af491a-790x790.svg",
   "mediaType": "image/svg+xml",
   "projectUrl": "https://midnight.network",
-  "notes": "NIGHT token listing request"
+  "notes": "NIGHT token listing request",
+  "status": {
+    "state": "listed",
+    "contractAddress": "eaab93c9bb71ec1423d10775ef0556580020560dfdf4f4536a8560b2fefd625e",
+    "txId": "00cad390087b27ee1fa94499c79807b2cfa88c487fb07b53f8618ae484349c0b3c",
+    "updatedAt": "2026-06-10T14:42:36.991Z",
+    "entryCount": 1
+  }
 }
