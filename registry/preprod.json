@@ -1,0 +1,5 @@
+{
+  "network": "preprod",
+  "contractAddress": "eaab93c9bb71ec1423d10775ef0556580020560dfdf4f4536a8560b2fefd625e",
+  "indexer": "https://indexer.preprod.midnight.network/api/v4/graphql"
+}

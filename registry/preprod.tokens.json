@@ -1,0 +1,14 @@
+{
+  "network": "preprod",
+  "contractAddress": "eaab93c9bb71ec1423d10775ef0556580020560dfdf4f4536a8560b2fefd625e",
+  "indexer": "https://indexer.preprod.midnight.network/api/v4/graphql",
+  "block": {
+    "height": 1165171,
+    "hash": "50799c339e72505ceb6d46f4dcc46f9fbbb33355612218cc8a0938f92e3d9733",
+    "timestamp": 1781100852000
+  },
+  "projectName": "Midnight Token Registry",
+  "registryVersion": 1,
+  "entryCount": 0,
+  "tokens": []
+}

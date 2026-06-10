@@ -1,0 +1,58 @@
+name: Validate registry request
+
+on:
+  pull_request:
+    paths:
+      - "requests/preprod/*.json"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/validate-request.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run validate:requests
+
+      - name: Changed request file
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          mapfile -t files < <(git diff --name-only FETCH_HEAD...HEAD -- 'requests/preprod/*.json')
+
+          count="${#files[@]}"
+          if [ "$count" -ne 1 ]; then
+            printf 'Expected exactly one changed request JSON file, found %s\n' "$count" >&2
+            printf '%s\n' "${files[@]}" >&2
+            exit 1
+          fi
+
+          {
+            echo "files<<EOF"
+            printf '%s\n' "${files[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Registry state check
+        env:
+          CHANGED_REQUEST_FILES: ${{ steps.changed.outputs.files }}
+        run: npm run check:pr

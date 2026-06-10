@@ -1,0 +1,203 @@
+pragma language_version >= 0.20.0;
+
+import CompactStandardLibrary;
+
+export enum TokenSurface { unshielded, shielded }
+
+struct Metadata {
+  name: Bytes<32>,
+  symbol: Maybe<Bytes<10>>,
+  decimals: Maybe<Uint<8>>,
+  description: Maybe<Bytes<256>>,
+  image: Maybe<Bytes<256>>,
+  mediaType: Maybe<Bytes<32>>,
+  version: Uint<16>,
+}
+
+struct RegistryEntry {
+  tokenColor: Bytes<32>,
+  surface: TokenSurface,
+  metadata: Metadata,
+  active: Boolean,
+}
+
+export sealed ledger projectName: Opaque<"string">;
+export sealed ledger registryVersion: Uint<16>;
+export ledger adminKeyHash: Bytes<32>;
+export ledger entries: Map<Bytes<32>, RegistryEntry>;
+
+witness localSecretKey(): Bytes<32>;
+
+constructor(projectName_: Opaque<"string">) {
+  adminKeyHash = _callerKeyHash();
+  projectName = disclose(projectName_);
+  registryVersion = 1 as Uint<16>;
+}
+
+circuit _deriveKeyHash(secretKey: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([
+    pad(32, 'TokenRegistry:admin:v1'),
+    secretKey
+  ]);
+}
+
+circuit _callerKeyHash(): Bytes<32> {
+  return disclose(_deriveKeyHash(localSecretKey()));
+}
+
+circuit _assertValidMetadata(metadata: Metadata): [] {
+  assert(metadata.name != default<Bytes<32>>, 'TokenRegistry: name is required');
+  assert(metadata.version > 0, 'TokenRegistry: metadata version is required');
+}
+
+circuit _lookupEntry(tokenColor: Bytes<32>): RegistryEntry {
+  assert(entries.member(tokenColor), 'TokenRegistry: unknown token');
+  return entries.lookup(tokenColor);
+}
+
+circuit _assertAdmin(): [] {
+  assert(_callerKeyHash() == adminKeyHash, 'TokenRegistry: unauthorized caller');
+}
+
+export circuit registerToken(
+  tokenColor: Bytes<32>,
+  surface: TokenSurface,
+  metadata: Metadata
+): [] {
+  _assertAdmin();
+
+  const color = disclose(tokenColor);
+  const tokenSurface = disclose(surface);
+  const tokenMetadata = disclose(metadata);
+
+  assert(!entries.member(color), 'TokenRegistry: token already registered');
+  _assertValidMetadata(tokenMetadata);
+
+  entries.insert(
+    color,
+    RegistryEntry {
+      tokenColor: color,
+      surface: tokenSurface,
+      metadata: tokenMetadata,
+      active: true,
+    }
+  );
+}
+
+export circuit updateTokenMetadata(
+  tokenColor: Bytes<32>,
+  metadata: Metadata
+): [] {
+  _assertAdmin();
+
+  const color = disclose(tokenColor);
+  const tokenMetadata = disclose(metadata);
+  const current = _lookupEntry(color);
+
+  _assertValidMetadata(tokenMetadata);
+
+  entries.insert(
+    color,
+    RegistryEntry {
+      tokenColor: current.tokenColor,
+      surface: current.surface,
+      metadata: tokenMetadata,
+      active: current.active,
+    }
+  );
+}
+
+export circuit updateTokenSurface(
+  tokenColor: Bytes<32>,
+  surface: TokenSurface
+): [] {
+  _assertAdmin();
+
+  const color = disclose(tokenColor);
+  const tokenSurface = disclose(surface);
+  const current = _lookupEntry(color);
+
+  entries.insert(
+    color,
+    RegistryEntry {
+      tokenColor: current.tokenColor,
+      surface: tokenSurface,
+      metadata: current.metadata,
+      active: current.active,
+    }
+  );
+}
+
+export circuit setTokenActive(
+  tokenColor: Bytes<32>,
+  active: Boolean
+): [] {
+  _assertAdmin();
+
+  const color = disclose(tokenColor);
+  const current = _lookupEntry(color);
+
+  entries.insert(
+    color,
+    RegistryEntry {
+      tokenColor: current.tokenColor,
+      surface: current.surface,
+      metadata: current.metadata,
+      active: disclose(active),
+    }
+  );
+}
+
+export circuit removeToken(tokenColor: Bytes<32>): [] {
+  _assertAdmin();
+
+  const color = disclose(tokenColor);
+  assert(entries.member(color), 'TokenRegistry: unknown token');
+  entries.remove(color);
+}
+
+export circuit transferAdmin(newAdminKeyHash: Bytes<32>): [] {
+  _assertAdmin();
+  const newHash = disclose(newAdminKeyHash);
+  assert(newHash != default<Bytes<32>>, 'TokenRegistry: admin key hash cannot be zero');
+  adminKeyHash = newHash;
+}
+
+export circuit tokenExists(tokenColor: Bytes<32>): Boolean {
+  return entries.member(disclose(tokenColor));
+}
+
+export circuit getToken(tokenColor: Bytes<32>): RegistryEntry {
+  return _lookupEntry(disclose(tokenColor));
+}
+
+export circuit getTokenMetadata(tokenColor: Bytes<32>): Metadata {
+  const entry = _lookupEntry(disclose(tokenColor));
+  return entry.metadata;
+}
+
+export circuit getTokenSurface(tokenColor: Bytes<32>): TokenSurface {
+  const entry = _lookupEntry(disclose(tokenColor));
+  return entry.surface;
+}
+
+export circuit isTokenActive(tokenColor: Bytes<32>): Boolean {
+  const entry = _lookupEntry(disclose(tokenColor));
+  return entry.active;
+}
+
+export circuit getCallerKeyHash(): Bytes<32> {
+  return _callerKeyHash();
+}
+
+export circuit getAdminKeyHash(): Bytes<32> {
+  return adminKeyHash;
+}
+
+export circuit getRegistryVersion(): Uint<16> {
+  return registryVersion;
+}
+
+export circuit getProjectName(): Opaque<"string"> {
+  return projectName;
+}
